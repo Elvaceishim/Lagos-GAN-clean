@@ -1,0 +1,46 @@
+Quick tests run at: 2025-09-09T22:47:43.178026
+CWD: /Users/mac/Lagos-GAN
+PyTorch version: 1.11.0
+Using device: cpu
+
+--- Lagos2Duplex dataset quick load test ---
+/Users/mac/Lagos-GAN/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+Using detected data_path: ./data
+Loaded 712 Lagos houses and 1984 duplexes for train split
+Dataset size (max): 1984
+Loaded 89 Lagos houses and 37 duplexes for val split
+Dataset size (max): 89
+Fetched one train batch. Type: <class 'dict'>
+  A shape: torch.Size([2, 3, 64, 64])
+  B shape: torch.Size([2, 3, 64, 64])
+  A_path type: <class 'list'>
+  B_path type: <class 'list'>
+  A_metadata type: <class 'dict'>
+  B_metadata type: <class 'dict'>
+Lagos2Duplex dataset quick load: SUCCESS
+
+--- CycleGAN one-epoch dry run (quick) ---
+Warning: Unknown config key training.save_epoch_freq
+Warning: Unknown config key training.print_freq
+create_models(**kwargs) failed, trying positional calls: create_models() missing 1 required positional argument: 'config'
+Creating CycleGAN models...
+Total Generator parameters: 22,756,358
+Total Discriminator parameters: 5,529,474
+create_models(cfg, device) succeeded
+Optimizers created
+Small dataloader prepared with 4 samples
+Epoch 1/5:   0%|          | 0/2 [00:00<?, ?it/s]Epoch 1/5:   0%|          | 0/2 [00:05<?, ?it/s, G=19.550, D_A=2.186, D_B=2.470]Epoch 1/5:  50%|█████     | 1/2 [00:06<00:06,  6.40s/it, G=19.550, D_A=2.186, D_B=2.470]Epoch 1/5:  50%|█████     | 1/2 [00:11<00:06,  6.40s/it, G=18.058, D_A=1.689, D_B=1.654]Epoch 1/5: 100%|██████████| 2/2 [00:11<00:00,  5.41s/it, G=18.058, D_A=1.689, D_B=1.654]Epoch 1/5: 100%|██████████| 2/2 [00:11<00:00,  5.56s/it, G=18.058, D_A=1.689, D_B=1.654]
+CycleGAN dry run: SUCCESS (train_epoch)
+
+--- AfroCover StyleGAN2 forward pass test ---
+Instantiated generator: <class 'afrocover.models.StyleGAN2Generator'>
+Detected mapping in_features from mapping.mapping.0.weight -> 64
+Generator output type: <class 'torch.Tensor'>
+Generator output shape: torch.Size([2, 3, 512, 512])
+Instantiated discriminator: <class 'afrocover.models.StyleGAN2Discriminator'>
+Discriminator output type: <class 'torch.Tensor'>
+Discriminator output shape: torch.Size([2, 1])
+AfroCover StyleGAN2 forward pass: SUCCESS
+
+All tests attempted.

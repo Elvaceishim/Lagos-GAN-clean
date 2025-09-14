@@ -1,0 +1,4 @@
+checkpoint_name,checkpoint_path,kid,lpips,log_file
+checkpoint_epoch_1,checkpoints/lagos2duplex/checkpoint_epoch_1.pt,7.01773587372449,0.3923560833930969,test_results/eval_runs/checkpoint_epoch_1.txt
+checkpoint_epoch_2,checkpoints/lagos2duplex/checkpoint_epoch_2.pt,6.641391454081633,0.39109165251255035,test_results/eval_runs/checkpoint_epoch_2.txt
+latest,checkpoints/lagos2duplex/latest.pt,6.81223042091837,0.3923560833930969,test_results/eval_runs/latest.txt

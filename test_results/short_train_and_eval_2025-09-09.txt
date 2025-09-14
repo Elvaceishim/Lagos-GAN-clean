@@ -1,0 +1,30 @@
+Short train+eval run at: 2025-09-09T23:07:31.318949
+CWD: /Users/mac/Lagos-GAN
+Using detected data_path: /Users/mac/Lagos-GAN/data
+Warning: Unknown config key training.save_epoch_freq
+Warning: Unknown config key training.print_freq
+Using device: cpu
+Loaded 712 Lagos houses and 1984 duplexes for train split
+Dataset size (max): 1984
+Loaded 89 Lagos houses and 37 duplexes for val split
+Dataset size (max): 89
+Train batches: 992 Val batches: 45
+Creating CycleGAN models...
+Total Generator parameters: 22,756,358
+Total Discriminator parameters: 5,529,474
+Models created
+Optimizers and schedulers ready
+
+=== Epoch 1/5 ===
+Epoch losses: {'G_total': 8.81274100801637, 'G_A': 0.5297239184860261, 'G_B': 0.516643816905637, 'cycle_A': 3.752423819154501, 'cycle_B': 3.6493595312199285, 'identity_A': 0.18452497859365277, 'identity_B': 0.18006493202260426, 'D_A': 0.403247942426993, 'D_B': 0.39387951254273856}
+Validation loss: 0.7292381882667541
+Checkpoint saved: /Users/mac/Lagos-GAN/checkpoints/lagos2duplex/checkpoint_epoch_1.pt
+Saved checkpoint: /Users/mac/Lagos-GAN/checkpoints/lagos2duplex/checkpoint_epoch_1.pt
+
+=== Epoch 2/5 ===
+Epoch losses: {'G_total': 7.478888030975096, 'G_A': 0.42972612903723795, 'G_B': 0.42562246263297576, 'cycle_A': 3.2086323754441355, 'cycle_B': 3.103040724271728, 'identity_A': 0.15688929971938412, 'identity_B': 0.1549770360542161, 'D_A': 0.2403651195082573, 'D_B': 0.24339207352679823}
+Validation loss: 0.6294775777392917
+Checkpoint saved: /Users/mac/Lagos-GAN/checkpoints/lagos2duplex/checkpoint_epoch_2.pt
+Saved checkpoint: /Users/mac/Lagos-GAN/checkpoints/lagos2duplex/checkpoint_epoch_2.pt
+
+=== Epoch 3/5 ===

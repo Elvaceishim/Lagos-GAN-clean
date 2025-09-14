@@ -1,0 +1,36 @@
+Generate+Eval run at: 2025-09-10T23:39:46.424305
+CWD: /Users/mac/Lagos-GAN
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /Users/mac/Lagos-GAN/.venv/lib/python3.9/site-packages/lpips/weights/v0.1/alex.pth
+LPIPS available: using perceptual metric
+Warning: Unknown config key training.save_epoch_freq
+Warning: Unknown config key training.print_freq
+Using device: cpu
+Creating CycleGAN models...
+Total Generator parameters: 22,756,358
+Total Discriminator parameters: 5,529,474
+Models instantiated
+Loaded checkpoint: /Users/mac/Lagos-GAN/checkpoints/lagos2duplex/latest.pt
+Model weights loaded from checkpoint
+Loaded 712 Lagos houses and 1765 duplexes for train split
+Dataset size (max): 1765
+Loaded 89 Lagos houses and 37 duplexes for val split
+Dataset size (max): 89
+Saving generated comparisons to: /Users/mac/Lagos-GAN/results/lagos2duplex/gen_vs_val
+Will process up to 50 validation samples
+Generated array shape: (50, 64, 64, 3)
+Diversity (mean pairwise L2) over generated set: 30.79540252685547
+Realism proxy (mean nearest-neighbor L2 to real val images): 33.50868606567383
+Mean LPIPS to nearest real: 0.4441114217042923
+KID (ResNet proxy) computed: 6.4133325733418385
+
+Summary:
+  Samples processed: 50
+  Diversity (mean pairwise L2): 30.79540252685547
+  Realism proxy (mean NN L2): 33.50868606567383
+  Mean LPIPS to NN (if available): 0.4441114217042923
+  Mean KID (if available): 6.4133325733418385
+
+Saved comparison images and summary at: /Users/mac/Lagos-GAN/results/lagos2duplex/gen_vs_val
+
+Caution: Duplex dataset is smaller and may lead to overfitting. Interpret diversity/realism metrics accordingly.

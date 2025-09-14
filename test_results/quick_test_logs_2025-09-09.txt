@@ -1,0 +1,18 @@
+Quick tests run on: 2025-09-09
+Working directory: /Users/mac/Lagos-GAN
+
+Summary of completed quick tests:
+
+1) Lagos2Duplex dataset load
+- Action: Loaded Lagos2Duplex dataset with reduced image size and reduced batch size for a quick test.
+- Result: Training dataloader produced batches successfully; train batch shapes and contents were confirmed (images and labels present). No errors.
+
+2) CycleGAN one-epoch dry run (small config)
+- Action: Ran one epoch of CycleGAN training with a small config (reduced model / image size / batch size) to verify code path.
+- Result: One-epoch training completed. Average losses printed for the epoch: generator loss, discriminator loss, cycle loss, and identity loss. No runtime errors encountered.
+
+3) AfroCover StyleGAN2 forward pass (reduced resolution)
+- Action: Created StyleGAN2 generator and discriminator at reduced resolution (quick test) and ran a forward pass.
+- Result: Generator produced images; discriminator produced logits. Output tensor shapes matched expectations for the reduced resolution test. No errors.
+
+Overall result: All requested quick tests completed successfully without errors. Tests validated dataset loading, a one-epoch CycleGAN training loop, and a StyleGAN2 forward pass at reduced resolution.

@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head><meta charset="utf-8"><title>Lagos GAN UI</title></head>
+  <body>
+    <h3>Upload image and set API key</h3>
+    <input type="file" id="fileInput" accept="image/*" />
+    <div>
+      <label for="apiKey">API Key (do not commit):</label>
+      <input id="apiKey" placeholder="paste your API key here" />
+    </div>
+    <button id="generateBtn">Generate</button>
+    <div id="result"></div>
+
+    <script>
+      document.getElementById('generateBtn').addEventListener('click', async () => {
+        const fileInput = document.getElementById('fileInput');
+        const key = document.getElementById('apiKey').value;
+        if (!fileInput.files.length) { alert('Choose a file'); return; }
+        const form = new FormData();
+        form.append('file', fileInput.files[0]);
+        const headers = key ? { 'x-api-key': key } : {};
+        try {
+          const res = await fetch('/generate', { method: 'POST', body: form, headers });
+          if (!res.ok) {
+            const txt = await res.text();
+            document.getElementById('result').textContent = 'Error: ' + txt;
+            return;
+          }
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const img = document.createElement('img');
+          img.src = url;
+          img.width = 256;
+          document.getElementById('result').innerHTML = '';
+          document.getElementById('result').appendChild(img);
+        } catch (err) {
+          document.getElementById('result').textContent = 'Request error: ' + err;
+        }
+      });
+    </script>
+  </body>
+</html>

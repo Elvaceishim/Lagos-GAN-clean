@@ -1,0 +1,48 @@
+Warning: Unknown config key training.save_epoch_freq
+Warning: Unknown config key training.print_freq
+Configuration validation passed
+Using device: cpu
+Loading dataset from: data_processed
+Loaded 712 Lagos houses and 1765 duplexes for train split
+Dataset size (max): 1765
+Loaded 89 Lagos houses and 37 duplexes for val split
+Dataset size (max): 89
+Train batches: 1765
+Validation batches: 89
+Creating CycleGAN models...
+Total Generator parameters: 22,756,358
+Total Discriminator parameters: 5,529,474
+Loading checkpoint: checkpoints/lagos2duplex/latest.pt
+Resumed from epoch 2
+Configuration saved to ./checkpoints/lagos2duplex/config.json
+Starting Lagos2Duplex CycleGAN training...
+Image size: 256x256
+Batch size: 1
+Epochs: 5
+Lambda cycle: 10.0
+Lambda identity: 0.5
+Device: cpu
+Warning: Unknown config key training.save_epoch_freq
+Warning: Unknown config key training.print_freq
+Configuration validation passed
+Using device: cpu
+Loading dataset from: data_processed
+Loaded 712 Lagos houses and 1765 duplexes for train split
+Dataset size (max): 1765
+Loaded 89 Lagos houses and 37 duplexes for val split
+Dataset size (max): 89
+Train batches: 1765
+Validation batches: 89
+Creating CycleGAN models...
+Total Generator parameters: 22,756,358
+Total Discriminator parameters: 5,529,474
+Loading checkpoint: checkpoints/lagos2duplex/latest.pt
+Resumed from epoch 2
+Configuration saved to ./checkpoints/lagos2duplex/config.json
+Starting Lagos2Duplex CycleGAN training...
+Image size: 256x256
+Batch size: 1
+Epochs: 5
+Lambda cycle: 10.0
+Lambda identity: 0.5
+Device: cpu
