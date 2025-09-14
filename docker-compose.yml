@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  lagos-gan:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: lagos-gan-inference:latest
+    env_file:
+      - .env
+    environment:
+      - GAN_TS_MODEL=/app/checkpoints/production/G_AB_epoch02_ts.pt
+      - GAN_IMG_SIZE=64
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./checkpoints/production:/app/checkpoints/production:ro
+      - ./results:/app/results
+    healthcheck:
+      test: ["CMD", "curl", "-s", "-H", "X-API-Key: ${GAN_API_KEYS}", "http://localhost:8080/ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped

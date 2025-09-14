@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lagos-gan
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lagos-gan
+  template:
+    metadata:
+      labels:
+        app: lagos-gan
+    spec:
+      containers:
+        - name: lagos-gan
+          image: your-registry/lagos-gan-inference:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: GAN_TS_MODEL
+              value: /app/checkpoints/production/G_AB_epoch02_ts.pt
+          envFrom:
+            - secretRef:
+                name: gan-api-key
+          volumeMounts:
+            - name: checkpoints
+              mountPath: /app/checkpoints/production
+              readOnly: true
+            - name: results
+              mountPath: /app/results
+      volumes:
+        - name: checkpoints
+          hostPath:
+            path: /path/on/node/checkpoints/production
+            type: Directory
+        - name: results
+          hostPath:
+            path: /path/on/node/results
+            type: Directory
