@@ -32,10 +32,27 @@ logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
 # Prometheus metrics
-from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
-REQUESTS = Counter("lagos_requests_total", "Total requests", ["endpoint", "api_key"])
-ERRORS = Counter("lagos_errors_total", "Total errors", ["endpoint", "api_key"])
-LATENCY = Histogram("lagos_request_latency_seconds", "Request latency seconds", ["endpoint", "api_key"])
+from prometheus_client import Counter, Histogram, core, generate_latest, CONTENT_TYPE_LATEST
+
+# ensure generate_latest and CONTENT_TYPE_LATEST are available for /metrics
+def _get_or_register(creator, name, *args, **kwargs):
+    """
+    Create the metric if not already registered; otherwise return existing collector.
+    Avoids ValueError on re-import during tests / reloads.
+    """
+    registry = core.REGISTRY
+    names = getattr(registry, "_names_to_collectors", {})
+    if name in names:
+        return names[name]
+    return creator(name, *args, **kwargs)
+
+# metrics (create-or-reuse)
+REQUESTS = _get_or_register(Counter, "lagos_requests_total", "Total requests", ["endpoint", "api_key"])
+ERRORS = _get_or_register(Counter, "lagos_errors_total", "Total errors", ["endpoint", "api_key"])
+REQUESTS_CREATED = _get_or_register(Counter, "lagos_requests_created", "Request create times", ["endpoint", "api_key"])
+# register histogram and also expose it under the name LATENCY because middleware expects LATENCY
+REQUEST_LATENCY = _get_or_register(Histogram, "lagos_request_latency_seconds", "Request latency seconds", ["endpoint", "api_key"])
+LATENCY = REQUEST_LATENCY
 
 app = FastAPI(title="Lagos-GAN Inference (secured)")
 

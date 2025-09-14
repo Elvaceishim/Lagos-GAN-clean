@@ -18,8 +18,7 @@ def test_ping():
     client = TestClient(app)
     resp = client.get("/ping", headers={"X-API-Key": "testkey"})
     assert resp.status_code == 200
-    j = resp.json()
-    assert j.get("status") == "ok"
+    assert resp.json().get("status") == "ok"
 
 def test_metrics():
     from inference.app import app
