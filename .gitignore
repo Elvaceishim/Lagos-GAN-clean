@@ -92,3 +92,15 @@ secrets.env
 .env.local
 .env
 api_keys.env
+
+node_modules/
+dist/
+build/
+.next/
+.out/
+*.log
+.venv/
+env/
+__pycache__/
+*.pyc
+.DS_Store
