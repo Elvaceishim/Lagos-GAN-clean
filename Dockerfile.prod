@@ -12,7 +12,7 @@ FROM base AS runtime
 WORKDIR /app
 COPY --from=builder /wheels /wheels
 RUN pip install --no-cache-dir /wheels/* && \
-    pip install --no-cache-dir torch==2.2.2+cpu torchvision==0.17.2+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
+    pip install --no-cache-dir torch==2.2.2 torchvision==0.17.2 --extra-index-url https://download.pytorch.org/whl/cpu
 
 COPY . .
 ENV GAN_TS_MODEL=/app/checkpoints/production/G_AB_epoch02_ts.pt
