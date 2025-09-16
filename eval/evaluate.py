@@ -97,6 +97,7 @@ class AfroCoverEvaluator:
                     [str(real_images_path), str(temp_dir)],
                     batch_size=batch_size,
                     device=self.device,
+                    num_workers=0,
                     dims=2048
                 )
             elif use_torch_fidelity:
@@ -124,7 +125,7 @@ class AfroCoverEvaluator:
             if self.lpips_net is None:
                 # self.lpips_net = lpips.LPIPS(net='alex').to(self.device)
                 pass
-            
+
             # TODO: Implement LPIPS calculation
             print(f"Calculating LPIPS for {num_samples} image pairs...")
             

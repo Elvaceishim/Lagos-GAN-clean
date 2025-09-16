@@ -1,0 +1,10 @@
+{
+  "training": {
+    "num_epochs": 250,
+    "batch_size": 2,
+    "lambda_perceptual": 0.1
+  },
+  "logging": {
+    "eval_fid_freq": 10
+  }
+}

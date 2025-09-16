@@ -1,0 +1,9 @@
+{
+  "timestamp": "2025-09-16T22:29:30.391956Z",
+  "device": "cpu",
+  "afrocover_fid": 482.9478031232543,
+  "num_generated": 10,
+  "batch_size": 5,
+  "checkpoint": "/Users/mac/Lagos-GAN/checkpoints/afrocover/latest.pt",
+  "real_images_path": "/Users/mac/Lagos-GAN/data_processed/afrocover/test"
+}
