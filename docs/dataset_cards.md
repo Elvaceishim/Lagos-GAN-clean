@@ -74,6 +74,7 @@ data/afrocover/
 3. **Quality Enhancement:** Auto-contrast adjustment
 4. **Validation:** Manual review for quality and appropriateness
 5. **Metadata Extraction:** Source, license, and cultural context information
+6. **Lightweight CPU Experiments:** Recent CPU-only experiments temporarily resample images to 128×128 with reduced channel counts for faster prototyping; these runs are not yet sufficient to achieve target FID metrics.
 
 ### Dataset Statistics
 

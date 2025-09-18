@@ -60,6 +60,31 @@ lagosgan/
 - User study: ≥70% participants prefer generated duplex vs baseline
 - Article: 2k+ words with charts, metrics, and visuals
 
+## Updated AfroCover Workflow (CPU-friendly)
+
+Recent experiments introduced a lighter StyleGAN configuration to make CPU-only iterations feasible.
+
+- Trim channels with `--channel_multiplier` and lower resolution via `--image_size`:
+  ```bash
+  python afrocover/train.py \
+      --data_path data_processed/afrocover \
+      --output_dir checkpoints/afrocover \
+      --image_size 128 \
+      --channel_multiplier 0.5 \
+      --batch_size 2 \
+      --num_epochs 20
+  ```
+- Copy the latest checkpoint for evaluation:
+  ```bash
+  cp checkpoints/afrocover/latest_checkpoint.pt checkpoints/afrocover/latest.pt
+  ```
+- Run the updated evaluator (auto-detects saved hyperparameters):
+  ```bash
+  PYTHONPATH=$(pwd) python scripts/run_afrocover_eval.py
+  ```
+
+Training on CPU still yields an AfroCover FID of ~464 (200 generated samples). Achieving the original <60 target will require extended GPU sessions; see `docs/model_cards.md` for current numbers and next steps.
+
 ## Links
 
 - [Live Demo](#) (Coming soon)

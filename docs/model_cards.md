@@ -58,15 +58,15 @@ This document provides detailed information about the models developed as part o
 **Batch Size:** 4  
 **Learning Rate:** 0.002  
 **Optimizer:** Adam (β₁=0.0, β₂=0.99)  
-**Hardware:** Single NVIDIA GPU  
-**Training Time:** ~24 hours  
+**Hardware:** Single NVIDIA GPU (original run); recent CPU-only experiments for 128² fine-tuning  
+**Training Time:** ~24 hours (original GPU run); additional CPU-only iterations remain in progress  
 
 ### Performance Metrics
 
 **Quantitative Metrics:**
-- FID Score: 45.2 (target: <60)
-- LPIPS Diversity: 0.42
-- Training Stability: Converged successfully
+- FID Score: 464.3 (CPU-only training @128², 200 generated samples)
+- LPIPS Diversity: 0.42 (from earlier GPU run)
+- Training Stability: Additional GPU training required to reach FID < 60
 
 **Qualitative Assessment:**
 - Visual Quality: High-resolution, coherent album covers
