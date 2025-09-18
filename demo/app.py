@@ -4,16 +4,48 @@ LagosGAN Demo Application
 Interactive Gradio demo showcasing both AfroCover and Lagos2Duplex models.
 """
 
-import gradio as gr
-import torch
-import numpy as np
-from PIL import Image
 import os
 from pathlib import Path
+from typing import Any
 
-# Import our models (once implemented)
-# from afrocover.models import StyleGAN2Generator
-# from lagos2duplex.models import CycleGANGenerator
+import gradio as gr
+import numpy as np
+import torch
+from PIL import Image
+
+from gradio_client import utils as gradio_client_utils
+
+
+# Temporary monkey patch: Gradio 4.** can emit boolean values inside JSON
+# schemas (e.g. `additionalProperties: False`). The stock conversion helper
+# assumes dictionaries and crashes when it encounters those booleans while
+# building the API docs. This shim coalesces boolean schemas into reasonable
+# string representations so the demo can launch until the upstream bug is
+# resolved.
+_ORIGINAL_JSON_SCHEMA_TO_PYTHON_TYPE = gradio_client_utils._json_schema_to_python_type
+
+
+def _json_schema_to_python_type_safe(schema: Any, defs) -> str:
+    if isinstance(schema, bool):
+        return "Any" if schema else "None"
+    return _ORIGINAL_JSON_SCHEMA_TO_PYTHON_TYPE(schema, defs)
+
+
+def _json_schema_to_python_type_public(schema: Any) -> str:
+    if isinstance(schema, bool):
+        return "Any" if schema else "None"
+    defs = schema.get("$defs") if isinstance(schema, dict) else None
+    type_hint = _json_schema_to_python_type_safe(schema, defs)
+    return type_hint.replace(
+        gradio_client_utils.CURRENT_FILE_DATA_FORMAT, "filepath"
+    )
+
+
+gradio_client_utils._json_schema_to_python_type = _json_schema_to_python_type_safe
+gradio_client_utils.json_schema_to_python_type = _json_schema_to_python_type_public
+
+from afrocover.models import StyleGAN2Generator
+from lagos2duplex.models import CycleGANGenerator, get_norm_layer
 
 
 class LagosGANDemo:
@@ -24,8 +56,27 @@ class LagosGANDemo:
         print(f"Using device: {self.device}")
         
         # Model paths
-        self.afrocover_model_path = "checkpoints/afrocover/final_model.pt"
-        self.lagos2duplex_model_path = "checkpoints/lagos2duplex/final_model.pt"
+        self.afrocover_model_path = self._resolve_checkpoint(
+            [
+                "checkpoints/afrocover/final_model.pt",
+                "checkpoints/afrocover/latest.pt",
+                "checkpoints/afrocover/latest_checkpoint.pt",
+            ]
+        )
+        self.lagos2duplex_model_path = self._resolve_checkpoint(
+            [
+                "checkpoints/lagos2duplex/final_model.pt",
+                "checkpoints/lagos2duplex/latest.pt",
+            ]
+        )
+
+        self.afrocover_z_dim = 512
+        self.afrocover_image_size = 256
+        self.afrocover_channel_multiplier = 1.0
+
+        self.lagos_input_nc = 3
+        self.lagos_output_nc = 3
+        self.lagos_image_size = 256
         
         # Load models
         self.afrocover_model = self._load_afrocover_model()
@@ -33,34 +84,85 @@ class LagosGANDemo:
         
         print("LagosGAN Demo initialized!")
     
+    def _resolve_checkpoint(self, candidates):
+        for p in candidates:
+            if p and os.path.exists(p):
+                return p
+        return None
+
     def _load_afrocover_model(self):
         """Load the trained AfroCover StyleGAN2 model"""
-        try:
-            # TODO: Implement model loading
-            print("Loading AfroCover model...")
-            # model = StyleGAN2Generator(...)
-            # if os.path.exists(self.afrocover_model_path):
-            #     checkpoint = torch.load(self.afrocover_model_path, map_location=self.device)
-            #     model.load_state_dict(checkpoint['generator_state_dict'])
-            # model.eval()
-            # return model
+        if not self.afrocover_model_path:
+            print("AfroCover checkpoint not found; demo will use placeholders")
             return None
+
+        try:
+            print(f"Loading AfroCover model from {self.afrocover_model_path}...")
+            checkpoint = torch.load(self.afrocover_model_path, map_location=self.device)
+            cfg = checkpoint.get("args", {})
+            self.afrocover_z_dim = cfg.get("z_dim", 512)
+            self.afrocover_image_size = cfg.get("image_size", 256)
+            self.afrocover_channel_multiplier = cfg.get("channel_multiplier", 1.0)
+
+            generator = StyleGAN2Generator(
+                z_dim=self.afrocover_z_dim,
+                w_dim=self.afrocover_z_dim,
+                img_resolution=self.afrocover_image_size,
+                img_channels=3,
+                channel_multiplier=self.afrocover_channel_multiplier,
+            ).to(self.device)
+
+            state = checkpoint.get("generator_state_dict") or checkpoint.get("generator")
+            if state is None:
+                raise ValueError("Generator weights not found in checkpoint")
+
+            generator.load_state_dict(state, strict=False)
+            generator.eval()
+            return generator
         except Exception as e:
             print(f"Error loading AfroCover model: {e}")
             return None
-    
+
     def _load_lagos2duplex_model(self):
         """Load the trained Lagos2Duplex CycleGAN model"""
-        try:
-            # TODO: Implement model loading
-            print("Loading Lagos2Duplex model...")
-            # model = CycleGANGenerator(...)
-            # if os.path.exists(self.lagos2duplex_model_path):
-            #     checkpoint = torch.load(self.lagos2duplex_model_path, map_location=self.device)
-            #     model.load_state_dict(checkpoint['G_AB_state_dict'])
-            # model.eval()
-            # return model
+        if not self.lagos2duplex_model_path:
+            print("Lagos2Duplex checkpoint not found; demo will use placeholders")
             return None
+
+        try:
+            print(f"Loading Lagos2Duplex model from {self.lagos2duplex_model_path}...")
+            checkpoint = torch.load(self.lagos2duplex_model_path, map_location=self.device)
+            cfg = checkpoint.get("config", {})
+            model_cfg = cfg.get("model", {})
+
+            self.lagos_input_nc = model_cfg.get("input_nc", 3)
+            self.lagos_output_nc = model_cfg.get("output_nc", 3)
+            ngf = model_cfg.get("ngf", 64)
+            norm = model_cfg.get("norm", "instance")
+            use_dropout = model_cfg.get("use_dropout", False)
+            n_blocks = model_cfg.get("n_blocks", 9)
+
+            data_cfg = cfg.get("data", {})
+            self.lagos_image_size = data_cfg.get("image_size", 256)
+
+            norm_layer = get_norm_layer(norm)
+
+            generator = CycleGANGenerator(
+                input_nc=self.lagos_input_nc,
+                output_nc=self.lagos_output_nc,
+                ngf=ngf,
+                norm_layer=norm_layer,
+                use_dropout=use_dropout,
+                n_blocks=n_blocks,
+            ).to(self.device)
+
+            state = checkpoint.get("G_AB_state_dict")
+            if state is None:
+                raise ValueError("G_AB_state_dict not found in checkpoint")
+
+            generator.load_state_dict(state, strict=False)
+            generator.eval()
+            return generator
         except Exception as e:
             print(f"Error loading Lagos2Duplex model: {e}")
             return None
@@ -69,32 +171,22 @@ class LagosGANDemo:
         """Generate African-inspired album covers"""
         if self.afrocover_model is None:
             return self._create_placeholder_images(num_images, "AfroCover model not loaded")
-        
+
         try:
-            # TODO: Implement generation
             print(f"Generating {num_images} album covers with seed {style_seed}")
-            
-            # Placeholder implementation
-            # if style_seed is not None:
-            #     torch.manual_seed(style_seed)
-            # 
-            # with torch.no_grad():
-            #     z = torch.randn(num_images, 512).to(self.device)
-            #     generated_images = self.afrocover_model(z)
-            #     
-            #     # Convert to PIL images
-            #     images = []
-            #     for i in range(num_images):
-            #         img_tensor = generated_images[i]
-            #         img_tensor = (img_tensor + 1) / 2  # Denormalize from [-1, 1] to [0, 1]
-            #         img_array = img_tensor.cpu().numpy().transpose(1, 2, 0)
-            #         img_array = (img_array * 255).astype(np.uint8)
-            #         images.append(Image.fromarray(img_array))
-            #     
-            #     return images
-            
-            return self._create_placeholder_images(num_images, "Generated Album Covers")
-            
+            if style_seed is not None:
+                torch.manual_seed(int(style_seed))
+            z = torch.randn(num_images, self.afrocover_z_dim, device=self.device)
+            with torch.no_grad():
+                output = self.afrocover_model(z)
+
+            images = []
+            for img_tensor in output:
+                img_tensor = img_tensor.clamp(-1, 1)
+                img_tensor = (img_tensor + 1.0) / 2.0  # to [0,1]
+                img_array = (img_tensor.detach().cpu().permute(1, 2, 0).numpy() * 255.0).astype(np.uint8)
+                images.append(Image.fromarray(img_array))
+            return images
         except Exception as e:
             print(f"Error generating album covers: {e}")
             return self._create_placeholder_images(num_images, f"Error: {e}")
@@ -103,35 +195,25 @@ class LagosGANDemo:
         """Transform Lagos house to modern duplex"""
         if self.lagos2duplex_model is None:
             return self._create_placeholder_image("Lagos2Duplex model not loaded")
-        
+
         if input_image is None:
             return self._create_placeholder_image("Please upload an image")
-        
+
         try:
-            # TODO: Implement transformation
             print("Transforming house to duplex...")
-            
-            # Placeholder implementation
-            # # Preprocess input image
-            # img = Image.fromarray(input_image).convert('RGB')
-            # img = img.resize((256, 256))
-            # img_tensor = torch.from_numpy(np.array(img)).permute(2, 0, 1).float()
-            # img_tensor = (img_tensor / 255.0 - 0.5) / 0.5  # Normalize to [-1, 1]
-            # img_tensor = img_tensor.unsqueeze(0).to(self.device)
-            # 
-            # with torch.no_grad():
-            #     transformed = self.lagos2duplex_model(img_tensor)
-            #     
-            #     # Convert back to PIL image
-            #     output_tensor = transformed[0]
-            #     output_tensor = (output_tensor + 1) / 2  # Denormalize
-            #     output_array = output_tensor.cpu().numpy().transpose(1, 2, 0)
-            #     output_array = (output_array * 255).astype(np.uint8)
-            #     
-            #     return Image.fromarray(output_array)
-            
-            return self._create_placeholder_image("Transformed Duplex")
-            
+            img = Image.fromarray(input_image).convert("RGB")
+            img = img.resize((self.lagos_image_size, self.lagos_image_size), Image.BICUBIC)
+            img_tensor = torch.from_numpy(np.asarray(img)).float() / 255.0
+            img_tensor = (img_tensor - 0.5) / 0.5  # [-1,1]
+            img_tensor = img_tensor.permute(2, 0, 1).unsqueeze(0).to(self.device)
+
+            with torch.no_grad():
+                output = self.lagos2duplex_model(img_tensor)
+
+            output = output[0].clamp(-1, 1)
+            output = (output + 1.0) / 2.0
+            output_array = (output.detach().cpu().permute(1, 2, 0).numpy() * 255.0).astype(np.uint8)
+            return Image.fromarray(output_array)
         except Exception as e:
             print(f"Error transforming house: {e}")
             return self._create_placeholder_image(f"Error: {e}")
@@ -279,23 +361,23 @@ def create_demo():
             
             LagosGAN is an experimental ML project showcasing how GANs can power African-centered synthetic creativity.
             
-            ### 🎨 AfroCover (StyleGAN2)
+            ### AfroCover (StyleGAN2)
             - Generates African-inspired music/album cover art
             - Trained on curated African design elements
             - 256×256 resolution outputs
             
-            ### 🏠 Lagos2Duplex (CycleGAN)  
+            ### Lagos2Duplex (CycleGAN)  
             - Transforms old Lagos house photos into modern duplex mockups
             - Explores architectural evolution in Nigeria
             - Conceptual designs for inspiration
             
-            ### ⚖️ Ethics & Limitations
+            ### Ethics & Limitations
             - All datasets are ethically sourced and properly licensed
             - Generated content is for creative inspiration only
             - Architectural designs are not construction-ready
             - Results may contain biases present in training data
             
-            ### 🔗 Links
+            ### Links
             - [GitHub Repository](#)
             - [Research Article](#)
             - [Dataset Information](docs/dataset_cards.md)
@@ -317,12 +399,14 @@ def main():
     
     # Launch with appropriate settings
     demo.launch(
-        server_name="0.0.0.0",  # Allow external access
-        server_port=7860,       # Default Gradio port
-        share=False,            # Set to True for public sharing
-        debug=True,             # Enable debug mode
-        show_error=True         # Show errors in interface
-    )
+    server_name="127.0.0.1",
+    server_port=7860,
+    share=True,   # set True for public link if needed
+    debug=True,
+    show_error=True,
+)
+
+
 
 
 if __name__ == "__main__":

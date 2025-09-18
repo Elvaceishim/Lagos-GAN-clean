@@ -50,8 +50,13 @@ lagosgan/
 
 4. **Run demo:**
    ```bash
-   python demo/app.py
+   PYTHONPATH=$(pwd) python demo/app.py
    ```
+   The app exposes both GAN experiences through a Gradio UI. Keep `share=True` inside `demo/app.py` if you need the temporary public link.
+
+### Note on Gradio 5.x
+
+Gradio 5 introduced a regression in its API schema helper that crashes when boolean `additionalProperties` entries appear in a component schema. Until the upstream fix ships, the demo applies a small monkey patch near the top of `demo/app.py` that coerces those boolean nodes into safe defaults. If you change Gradio versions or run in a Hugging Face Space, leave that shim in place (or remove it once a patched release lands).
 
 ## Success Metrics
 
