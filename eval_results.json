@@ -1,9 +1,12 @@
 {
-  "timestamp": "2025-09-16T22:29:30.391956Z",
+  "timestamp": "2025-09-17T12:03:38.650928Z",
   "device": "cpu",
-  "afrocover_fid": 482.9478031232543,
-  "num_generated": 10,
-  "batch_size": 5,
+  "afrocover_fid": 464.22879209100296,
+  "num_generated": 200,
+  "batch_size": 20,
   "checkpoint": "/Users/mac/Lagos-GAN/checkpoints/afrocover/latest.pt",
-  "real_images_path": "/Users/mac/Lagos-GAN/data_processed/afrocover/test"
+  "real_images_path": "/Users/mac/Lagos-GAN/data_processed/afrocover/test",
+  "image_size": 128,
+  "channel_multiplier": 0.5,
+  "z_dim": 512
 }

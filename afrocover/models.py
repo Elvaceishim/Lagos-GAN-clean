@@ -112,7 +112,14 @@ class ModulatedConv2d(nn.Module):
 class StyleGAN2Generator(nn.Module):
     """StyleGAN2 Generator"""
     
-    def __init__(self, z_dim=512, w_dim=512, img_resolution=256, img_channels=3):
+    def __init__(
+        self,
+        z_dim=512,
+        w_dim=512,
+        img_resolution=256,
+        img_channels=3,
+        channel_multiplier=1.0,
+    ):
         super().__init__()
         
         self.z_dim = z_dim
@@ -120,19 +127,28 @@ class StyleGAN2Generator(nn.Module):
         self.img_resolution = img_resolution
         self.img_channels = img_channels
         self.num_layers = int(math.log2(img_resolution)) - 1
+        self.channel_multiplier = channel_multiplier
         
         # Mapping network
         self.mapping = MappingNetwork(z_dim, w_dim)
         
+        # Helper for scaled channels
+        def _scaled_channels(value, minimum=16, maximum=512):
+            scaled = int(value * self.channel_multiplier)
+            return max(minimum, min(maximum, scaled))
+
+        const_channels = _scaled_channels(512, minimum=32)
+
         # Synthesis network
-        self.const = nn.Parameter(torch.randn(1, 512, 4, 4))
+        self.const = nn.Parameter(torch.randn(1, const_channels, 4, 4))
         
         # Progressive layers
         self.layers = nn.ModuleList()
-        in_channels = 512
+        in_channels = const_channels
         
         for i in range(self.num_layers):
-            out_channels = min(512, 512 // (2 ** max(0, i - 4)))
+            raw_channels = min(512, 512 // (2 ** max(0, i - 4)))
+            out_channels = _scaled_channels(raw_channels)
             
             self.layers.append(nn.ModuleList([
                 ModulatedConv2d(in_channels, out_channels, 3, w_dim, upsample=i > 0),
@@ -180,23 +196,26 @@ class StyleGAN2Generator(nn.Module):
 class StyleGAN2Discriminator(nn.Module):
     """StyleGAN2 Discriminator"""
     
-    def __init__(self, img_resolution=256, img_channels=3):
+    def __init__(self, img_resolution=256, img_channels=3, channel_multiplier=1.0):
         super().__init__()
         
         self.img_resolution = img_resolution
         self.img_channels = img_channels
         self.num_layers = int(math.log2(img_resolution)) - 1
+        self.channel_multiplier = channel_multiplier
         
         # Progressive layers
         self.layers = nn.ModuleList()
         
         # From RGB
-        self.from_rgb = nn.Conv2d(img_channels, 32, 1)
+        base_channels = max(32, min(512, int(32 * self.channel_multiplier)))
+        self.from_rgb = nn.Conv2d(img_channels, base_channels, 1)
         
         # Downsampling layers
-        in_channels = 32
+        in_channels = base_channels
         for i in range(self.num_layers):
-            out_channels = min(512, 32 * (2 ** (i + 1)))
+            raw_channels = min(512, 32 * (2 ** (i + 1)))
+            out_channels = max(base_channels, int(raw_channels * self.channel_multiplier))
             
             self.layers.append(nn.Sequential(
                 nn.Conv2d(in_channels, out_channels, 3, padding=1),
@@ -236,7 +255,8 @@ def test_models():
         z_dim=512,
         w_dim=512,
         img_resolution=256,
-        img_channels=3
+        img_channels=3,
+        channel_multiplier=0.5,
     ).to(device)
     
     z = torch.randn(2, 512).to(device)
@@ -247,7 +267,8 @@ def test_models():
     print("Testing StyleGAN2 Discriminator...")
     discriminator = StyleGAN2Discriminator(
         img_resolution=256,
-        img_channels=3
+        img_channels=3,
+        channel_multiplier=0.5,
     ).to(device)
     
     real_images = torch.randn(2, 3, 256, 256).to(device)

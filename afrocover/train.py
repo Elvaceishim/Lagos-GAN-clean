@@ -43,6 +43,8 @@ def parse_args():
                         help='Save checkpoint frequency (epochs)')
     parser.add_argument('--sample_freq', type=int, default=5,
                         help='Generate samples frequency (epochs)')
+    parser.add_argument('--channel_multiplier', type=float, default=1.0,
+                        help='Scales the number of feature channels (use <1.0 to trim the network)')
     
     return parser.parse_args()
 
@@ -88,12 +90,14 @@ def create_models(args, device):
         z_dim=args.z_dim,
         w_dim=args.z_dim,
         img_resolution=args.image_size,
-        img_channels=3
+        img_channels=3,
+        channel_multiplier=args.channel_multiplier,
     ).to(device)
     
     discriminator = StyleGAN2Discriminator(
         img_resolution=args.image_size,
-        img_channels=3
+        img_channels=3,
+        channel_multiplier=args.channel_multiplier,
     ).to(device)
     
     return generator, discriminator
