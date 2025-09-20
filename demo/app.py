@@ -15,6 +15,20 @@ from PIL import Image
 
 from gradio_client import utils as gradio_client_utils
 
+try:
+    from afrocover.models import StyleGAN2Generator
+except ModuleNotFoundError:  # pragma: no cover - deployed Spaces copy omits training code
+    StyleGAN2Generator = None
+    print("Warning: afrocover.models not available; demo will use AfroCover placeholders.")
+
+try:
+    from lagos2duplex.models import CycleGANGenerator, get_norm_layer
+except ModuleNotFoundError:  # pragma: no cover - deployed Spaces copy omits training code
+    CycleGANGenerator = None
+
+    def get_norm_layer(*_args, **_kwargs):  # type: ignore
+        raise RuntimeError("lagos2duplex.models not available; cannot build generator.")
+
 
 # Temporary monkey patch: Gradio 4.** can emit boolean values inside JSON
 # schemas (e.g. `additionalProperties: False`). The stock conversion helper
@@ -92,6 +106,9 @@ class LagosGANDemo:
 
     def _load_afrocover_model(self):
         """Load the trained AfroCover StyleGAN2 model"""
+        if StyleGAN2Generator is None:
+            print("AfroCover code unavailable; demo will show placeholders.")
+            return None
         if not self.afrocover_model_path:
             print("AfroCover checkpoint not found; demo will use placeholders")
             return None
@@ -125,6 +142,9 @@ class LagosGANDemo:
 
     def _load_lagos2duplex_model(self):
         """Load the trained Lagos2Duplex CycleGAN model"""
+        if CycleGANGenerator is None:
+            print("Lagos2Duplex code unavailable; demo will show placeholders.")
+            return None
         if not self.lagos2duplex_model_path:
             print("Lagos2Duplex checkpoint not found; demo will use placeholders")
             return None
@@ -399,12 +419,12 @@ def main():
     
     # Launch with appropriate settings
     demo.launch(
-    server_name="127.0.0.1",
-    server_port=7860,
-    share=True,   # set True for public link if needed
-    debug=True,
-    show_error=True,
-)
+        server_name="0.0.0.0",
+        server_port=7860,
+        share=False,
+        debug=False,
+        show_error=True,
+    )
 
 
 

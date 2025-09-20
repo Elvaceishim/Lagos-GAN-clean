@@ -1,0 +1,24 @@
+name: Sync Space
+on:
+  push:
+    branches: [main]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install HF CLI
+        run: pip install --upgrade huggingface_hub[cli]
+
+      - name: Sync selected files to Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE: ${{ secrets.HF_SPACE }}
+        run: |
+          hf transfer --repo-type space --repo-id "$HF_SPACE" demo demo
+          hf transfer --repo-type space --repo-id "$HF_SPACE" README.md README.md
+          hf transfer --repo-type space --repo-id "$HF_SPACE" requirements.txt requirements.txt
+          hf transfer --repo-type space --repo-id "$HF_SPACE" requirements.inference.txt requirements.inference.txt
+          hf transfer --repo-type space --repo-id "$HF_SPACE" models models

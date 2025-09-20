@@ -1,3 +1,17 @@
+---
+title: Lagos Gan Demo
+emoji: 📚
+colorFrom: purple
+colorTo: purple
+sdk: gradio
+sdk_version: 5.46.0
+app_file: app.py
+pinned: false
+short_description: Experimental ML project showcasing how GANs work
+---
+
+Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+
 # LagosGAN
 
 LagosGAN is an experimental ML project showcasing how GANs can power African-centered synthetic creativity. It combines two GAN applications in one system:
