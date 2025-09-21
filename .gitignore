@@ -30,6 +30,7 @@ MANIFEST
 # PyTorch
 *.pth
 *.pt
+!models/**/*.pt
 
 # Jupyter Notebook
 .ipynb_checkpoints
