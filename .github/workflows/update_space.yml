@@ -1,24 +1,53 @@
-name: Sync Space
-on:
-  push:
-    branches: [main]
-
-jobs:
-  sync:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install HF CLI
-        run: pip install --upgrade huggingface_hub[cli]
-
       - name: Sync selected files to Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_SPACE: ${{ secrets.HF_SPACE }}
         run: |
-          huggingface-cli upload --repo-type space --token "$HF_TOKEN" demo "$HF_SPACE" --path-in-repo demo
-          huggingface-cli upload --repo-type space --token "$HF_TOKEN" README.md "$HF_SPACE" --path-in-repo README.md
-          huggingface-cli upload --repo-type space --token "$HF_TOKEN" requirements.txt "$HF_SPACE" --path-in-repo requirements.txt
-          huggingface-cli upload --repo-type space --token "$HF_TOKEN" requirements.inference.txt "$HF_SPACE" --path-in-repo requirements.inference.txt
-          huggingface-cli upload --repo-type space --token "$HF_TOKEN" models "$HF_SPACE" --path-in-repo models
+          python - <<'PY'
+from huggingface_hub import HfApi
+import os
+
+token = os.environ["HF_TOKEN"]
+space = os.environ["HF_SPACE"]
+api = HfApi()
+
+api.upload_folder(
+    folder_path="demo",
+    path_in_repo="demo",
+    repo_id=space,
+    repo_type="space",
+    token=token,
+)
+
+api.upload_file(
+    path_or_fileobj="README.md",
+    path_in_repo="README.md",
+    repo_id=space,
+    repo_type="space",
+    token=token,
+)
+
+api.upload_file(
+    path_or_fileobj="requirements.txt",
+    path_in_repo="requirements.txt",
+    repo_id=space,
+    repo_type="space",
+    token=token,
+)
+
+api.upload_file(
+    path_or_fileobj="requirements.inference.txt",
+    path_in_repo="requirements.inference.txt",
+    repo_id=space,
+    repo_type="space",
+    token=token,
+)
+
+api.upload_folder(
+    folder_path="models",
+    path_in_repo="models",
+    repo_id=space,
+    repo_type="space",
+    token=token,
+)
+PY
