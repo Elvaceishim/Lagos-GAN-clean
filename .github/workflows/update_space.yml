@@ -17,8 +17,8 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_SPACE: ${{ secrets.HF_SPACE }}
         run: |
-          huggingface-cli upload --repo-type space --repo-id "$HF_SPACE" --token "$HF_TOKEN" --path demo --destination demo
-          huggingface-cli upload --repo-type space --repo-id "$HF_SPACE" --token "$HF_TOKEN" --path README.md --destination README.md
-          huggingface-cli upload --repo-type space --repo-id "$HF_SPACE" --token "$HF_TOKEN" --path requirements.txt --destination requirements.txt
-          huggingface-cli upload --repo-type space --repo-id "$HF_SPACE" --token "$HF_TOKEN" --path requirements.inference.txt --destination requirements.inference.txt
-          huggingface-cli upload --repo-type space --repo-id "$HF_SPACE" --token "$HF_TOKEN" --path models --destination models
+          huggingface-cli upload --repo-type space --token "$HF_TOKEN" demo "$HF_SPACE" --path_in_repo demo
+          huggingface-cli upload --repo-type space --token "$HF_TOKEN" README.md "$HF_SPACE" --path_in_repo README.md
+          huggingface-cli upload --repo-type space --token "$HF_TOKEN" requirements.txt "$HF_SPACE" --path_in_repo requirements.txt
+          huggingface-cli upload --repo-type space --token "$HF_TOKEN" requirements.inference.txt "$HF_SPACE" --path_in_repo requirements.inference.txt
+          huggingface-cli upload --repo-type space --token "$HF_TOKEN" models "$HF_SPACE" --path_in_repo models
