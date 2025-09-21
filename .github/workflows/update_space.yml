@@ -12,7 +12,7 @@ jobs:
       - name: Install HF CLI
         run: pip install --upgrade huggingface_hub[cli]
 
-            - name: Sync selected files to Space
+      - name: Sync selected files to Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_SPACE: ${{ secrets.HF_SPACE }}
@@ -61,46 +61,3 @@ jobs:
           upload_file_if_exists("requirements.inference.txt", "requirements.inference.txt")
           upload_folder_if_exists("models", "models")
           PY
-          import os
-          from huggingface_hub import HfApi
-
-          token = os.environ["HF_TOKEN"]
-          space = os.environ["HF_SPACE"]
-          api = HfApi()
-          root = Path(".")
-
-          def upload_folder_if_exists(relative_path: str, target: str):
-              folder = root / relative_path
-              if folder.is_dir():
-                  print(f"Uploading folder '{relative_path}' → '{target}'")
-                  api.upload_folder(
-                      folder_path=str(folder),
-                      path_in_repo=target,
-                      repo_id=space,
-                      repo_type="space",
-                      token=token,
-                  )
-              else:
-                  print(f"Skipping folder '{relative_path}' (not found)")
-
-          def upload_file_if_exists(relative_path: str, target: str):
-              file_path = root / relative_path
-              if file_path.is_file():
-                  print(f"Uploading file '{relative_path}' → '{target}'")
-                  api.upload_file(
-                      path_or_fileobj=str(file_path),
-                      path_in_repo=target,
-                      repo_id=space,
-                      repo_type="space",
-                      token=token,
-                  )
-              else:
-                  print(f"Skipping file '{relative_path}' (not found)")
-
-          upload_folder_if_exists("demo", "demo")
-          upload_file_if_exists("README.md", "README.md")
-          upload_file_if_exists("requirements.txt", "requirements.txt")
-          upload_file_if_exists("requirements.inference.txt", "requirements.inference.txt")
-          upload_folder_if_exists("models", "models")
-          PY
-
