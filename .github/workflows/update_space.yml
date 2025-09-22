@@ -27,7 +27,7 @@ jobs:
           api = HfApi()
           root = Path(".")
 
-          def upload_folder_if_exists(relative_path: str, target: str):
+          def upload_folder_if_exists(relative_path, target):
               folder = root / relative_path
               if folder.is_dir():
                   print(f"Uploading folder '{relative_path}' → '{target}'")
@@ -41,7 +41,7 @@ jobs:
               else:
                   print(f"Skipping folder '{relative_path}' (not found)")
 
-          def upload_file_if_exists(relative_path: str, target: str):
+          def upload_file_if_exists(relative_path, target):
               file_path = root / relative_path
               if file_path.is_file():
                   print(f"Uploading file '{relative_path}' → '{target}'")
