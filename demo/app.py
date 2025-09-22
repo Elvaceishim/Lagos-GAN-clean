@@ -103,9 +103,13 @@ class LagosGANDemo:
         print("LagosGAN Demo initialized!")
     
     def _resolve_checkpoint(self, candidates):
-        for p in candidates:
-            if p and os.path.exists(p):
-                return p
+        base_dir = Path(__file__).resolve().parent.parent
+        for rel in candidates:
+            if not rel:
+                continue
+            abs_path = base_dir / rel
+            if abs_path.exists():
+                return str(abs_path)
         return None
 
     def _load_afrocover_model(self):
