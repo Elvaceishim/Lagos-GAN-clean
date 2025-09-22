@@ -59,5 +59,6 @@ jobs:
           upload_file_if_exists("README.md", "README.md")
           upload_file_if_exists("requirements.txt", "requirements.txt")
           upload_file_if_exists("requirements.inference.txt", "requirements.inference.txt")
+          upload_folder_if_exists("checkpoints", "checkpoints")
           upload_folder_if_exists("models", "models")
           PY

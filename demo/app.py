@@ -75,12 +75,16 @@ class LagosGANDemo:
                 "checkpoints/afrocover/final_model.pt",
                 "checkpoints/afrocover/latest.pt",
                 "checkpoints/afrocover/latest_checkpoint.pt",
+                "models/afrocover/final_model.pt",
+                "models/afrocover/latest.pt",
             ]
         )
         self.lagos2duplex_model_path = self._resolve_checkpoint(
             [
                 "checkpoints/lagos2duplex/final_model.pt",
                 "checkpoints/lagos2duplex/latest.pt",
+                "models/lagos2duplex/final_model.pt",
+                "models/lagos2duplex/latest.pt",
             ]
         )
 
