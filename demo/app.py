@@ -72,19 +72,19 @@ class LagosGANDemo:
         # Model paths
         self.afrocover_model_path = self._resolve_checkpoint(
             [
+                "models/afrocover/final_model.pt",
+                "models/afrocover/latest.pt",
                 "checkpoints/afrocover/final_model.pt",
                 "checkpoints/afrocover/latest.pt",
                 "checkpoints/afrocover/latest_checkpoint.pt",
-                "models/afrocover/final_model.pt",
-                "models/afrocover/latest.pt",
             ]
         )
         self.lagos2duplex_model_path = self._resolve_checkpoint(
             [
-                "checkpoints/lagos2duplex/final_model.pt",
-                "checkpoints/lagos2duplex/latest.pt",
                 "models/lagos2duplex/final_model.pt",
                 "models/lagos2duplex/latest.pt",
+                "checkpoints/lagos2duplex/final_model.pt",
+                "checkpoints/lagos2duplex/latest.pt",
             ]
         )
 
@@ -123,23 +123,46 @@ class LagosGANDemo:
 
         try:
             print(f"Loading AfroCover model from {self.afrocover_model_path}...")
+            if "models/" in self.afrocover_model_path:
+                try:
+                    scripted = torch.jit.load(
+                        self.afrocover_model_path,
+                        map_location=self.device,
+                    )
+                    scripted.eval()
+                    return scripted
+                except Exception as jit_err:
+                    print(f"TorchScript load failed ({jit_err}); falling back to state dict")
+
             checkpoint = torch.load(
                 self.afrocover_model_path,
                 map_location=self.device,
                 weights_only=False,
             )
-            cfg = checkpoint.get("args", {})
-            self.afrocover_z_dim = cfg.get("z_dim", 512)
-            self.afrocover_image_size = cfg.get("image_size", 256)
-            self.afrocover_channel_multiplier = cfg.get("channel_multiplier", 1.0)
+            generator = None
+            for cfg_key in ("args", "config", "G_cfg", "model_cfg"):
+                cfg = checkpoint.get(cfg_key, {}) or {}
+                if cfg:
+                    self.afrocover_z_dim = cfg.get("z_dim", 512)
+                    self.afrocover_image_size = cfg.get("image_size", 256)
+                    self.afrocover_channel_multiplier = cfg.get("channel_multiplier", 1.0)
+                    generator = StyleGAN2Generator(
+                        z_dim=self.afrocover_z_dim,
+                        w_dim=self.afrocover_z_dim,
+                        img_resolution=self.afrocover_image_size,
+                        img_channels=3,
+                        channel_multiplier=self.afrocover_channel_multiplier,
+                    ).to(self.device)
+                    break
 
-            generator = StyleGAN2Generator(
-                z_dim=self.afrocover_z_dim,
-                w_dim=self.afrocover_z_dim,
-                img_resolution=self.afrocover_image_size,
-                img_channels=3,
-                channel_multiplier=self.afrocover_channel_multiplier,
-            ).to(self.device)
+            if generator is None:
+                generator = StyleGAN2Generator(
+                    z_dim=self.afrocover_z_dim,
+                    w_dim=self.afrocover_z_dim,
+                    img_resolution=self.afrocover_image_size,
+                    img_channels=3,
+                    channel_multiplier=self.afrocover_channel_multiplier,
+                ).to(self.device)
 
             state = (
                 checkpoint.get("generator_state_dict")
@@ -178,6 +201,17 @@ class LagosGANDemo:
 
         try:
             print(f"Loading Lagos2Duplex model from {self.lagos2duplex_model_path}...")
+            if "models/" in self.lagos2duplex_model_path:
+                try:
+                    scripted = torch.jit.load(
+                        self.lagos2duplex_model_path,
+                        map_location=self.device,
+                    )
+                    scripted.eval()
+                    return scripted
+                except Exception as jit_err:
+                    print(f"TorchScript load failed ({jit_err}); falling back to state dict")
+
             checkpoint = torch.load(
                 self.lagos2duplex_model_path,
                 map_location=self.device,
