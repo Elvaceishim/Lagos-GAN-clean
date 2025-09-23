@@ -123,7 +123,11 @@ class LagosGANDemo:
 
         try:
             print(f"Loading AfroCover model from {self.afrocover_model_path}...")
-            checkpoint = torch.load(self.afrocover_model_path, map_location=self.device)
+            checkpoint = torch.load(
+                self.afrocover_model_path,
+                map_location=self.device,
+                weights_only=False,
+            )
             cfg = checkpoint.get("args", {})
             self.afrocover_z_dim = cfg.get("z_dim", 512)
             self.afrocover_image_size = cfg.get("image_size", 256)
@@ -159,7 +163,11 @@ class LagosGANDemo:
 
         try:
             print(f"Loading Lagos2Duplex model from {self.lagos2duplex_model_path}...")
-            checkpoint = torch.load(self.lagos2duplex_model_path, map_location=self.device)
+            checkpoint = torch.load(
+                self.lagos2duplex_model_path,
+                map_location=self.device,
+                weights_only=False,
+            )
             cfg = checkpoint.get("config", {})
             model_cfg = cfg.get("model", {})
 
