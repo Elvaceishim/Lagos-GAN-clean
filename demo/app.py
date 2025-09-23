@@ -141,11 +141,26 @@ class LagosGANDemo:
                 channel_multiplier=self.afrocover_channel_multiplier,
             ).to(self.device)
 
-            state = checkpoint.get("generator_state_dict") or checkpoint.get("generator")
+            state = (
+                checkpoint.get("generator_state_dict")
+                or checkpoint.get("generator")
+                or checkpoint.get("g_ema")
+                or checkpoint.get("ema")
+            )
             if state is None:
                 raise ValueError("Generator weights not found in checkpoint")
 
-            generator.load_state_dict(state, strict=False)
+            load_result = generator.load_state_dict(state, strict=False)
+            if getattr(load_result, "missing_keys", None):
+                print(
+                    "AfroCover load missing keys:",
+                    sorted(load_result.missing_keys),
+                )
+            if getattr(load_result, "unexpected_keys", None):
+                print(
+                    "AfroCover load unexpected keys:",
+                    sorted(load_result.unexpected_keys),
+                )
             generator.eval()
             return generator
         except Exception as e:
@@ -192,11 +207,25 @@ class LagosGANDemo:
                 n_blocks=n_blocks,
             ).to(self.device)
 
-            state = checkpoint.get("G_AB_state_dict")
+            state = (
+                checkpoint.get("G_AB_state_dict")
+                or checkpoint.get("generator_state_dict")
+                or checkpoint.get("generator")
+            )
             if state is None:
                 raise ValueError("G_AB_state_dict not found in checkpoint")
 
-            generator.load_state_dict(state, strict=False)
+            load_result = generator.load_state_dict(state, strict=False)
+            if getattr(load_result, "missing_keys", None):
+                print(
+                    "Lagos2Duplex load missing keys:",
+                    sorted(load_result.missing_keys),
+                )
+            if getattr(load_result, "unexpected_keys", None):
+                print(
+                    "Lagos2Duplex load unexpected keys:",
+                    sorted(load_result.unexpected_keys),
+                )
             generator.eval()
             return generator
         except Exception as e:
@@ -239,7 +268,8 @@ class LagosGANDemo:
             print("Transforming house to duplex...")
             img = Image.fromarray(input_image).convert("RGB")
             img = img.resize((self.lagos_image_size, self.lagos_image_size), Image.BICUBIC)
-            img_tensor = torch.from_numpy(np.asarray(img)).float() / 255.0
+            img_np = np.array(img, copy=True)
+            img_tensor = torch.from_numpy(img_np).float() / 255.0
             img_tensor = (img_tensor - 0.5) / 0.5  # [-1,1]
             img_tensor = img_tensor.permute(2, 0, 1).unsqueeze(0).to(self.device)
 
