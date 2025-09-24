@@ -163,6 +163,14 @@ class LagosGANDemo:
                     img_channels=3,
                     channel_multiplier=self.afrocover_channel_multiplier,
                 ).to(self.device)
+            print(
+                "AfroCover generator config:",
+                {
+                    "z_dim": self.afrocover_z_dim,
+                    "image_size": self.afrocover_image_size,
+                    "channel_multiplier": self.afrocover_channel_multiplier,
+                },
+            )
 
             state = (
                 checkpoint.get("generator_state_dict")
@@ -240,6 +248,19 @@ class LagosGANDemo:
                 use_dropout=use_dropout,
                 n_blocks=n_blocks,
             ).to(self.device)
+
+            print(
+                "Lagos2Duplex generator config:",
+                {
+                    "input_nc": self.lagos_input_nc,
+                    "output_nc": self.lagos_output_nc,
+                    "ngf": ngf,
+                    "norm": norm,
+                    "use_dropout": use_dropout,
+                    "n_blocks": n_blocks,
+                    "image_size": self.lagos_image_size,
+                },
+            )
 
             state = (
                 checkpoint.get("G_AB_state_dict")
