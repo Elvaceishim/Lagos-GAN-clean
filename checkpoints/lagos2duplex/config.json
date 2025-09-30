@@ -1,0 +1,70 @@
+{
+  "model": {
+    "input_nc": 3,
+    "output_nc": 3,
+    "ngf": 64,
+    "ndf": 64,
+    "netG": "resnet_9blocks",
+    "netD": "basic",
+    "n_layers_D": 3,
+    "norm": "instance",
+    "use_dropout": false,
+    "init_type": "normal",
+    "init_gain": 0.02
+  },
+  "training": {
+    "num_epochs": 200,
+    "batch_size": 1,
+    "learning_rate": 0.0002,
+    "beta1": 0.5,
+    "beta2": 0.999,
+    "lambda_cycle": 10.0,
+    "lambda_identity": 0.5,
+    "lambda_perceptual": 0.1,
+    "gan_mode": "lsgan",
+    "cycle_loss_type": "l1",
+    "identity_loss_type": "l1",
+    "lr_policy": "linear",
+    "lr_decay_iters": 50,
+    "n_epochs_decay": 100,
+    "pool_size": 50,
+    "max_grad_norm": null
+  },
+  "data": {
+    "data_path": "data_processed",
+    "image_size": 256,
+    "num_workers": 4,
+    "pin_memory": true,
+    "augmentations": true,
+    "paired": false
+  },
+  "logging": {
+    "save_epoch_freq": 20,
+    "save_latest_freq": 5000,
+    "print_freq": 100,
+    "display_freq": 400,
+    "use_wandb": true,
+    "wandb_project": "lagosgan-lagos2duplex",
+    "wandb_run_name": null,
+    "use_tensorboard": false,
+    "num_test_samples": 4,
+    "eval_fid_freq": 10
+  },
+  "paths": {
+    "project_root": "/Users/mac/Lagos-GAN",
+    "checkpoints_dir": "./checkpoints/lagos2duplex",
+    "results_dir": "/Users/mac/Lagos-GAN/results/lagos2duplex",
+    "logs_dir": "/Users/mac/Lagos-GAN/logs/lagos2duplex",
+    "resume_checkpoint": null
+  },
+  "system": {
+    "device": "cuda",
+    "gpu_ids": [
+      0
+    ],
+    "mixed_precision": false,
+    "compile_model": false,
+    "seed": 42,
+    "deterministic": false
+  }
+}
