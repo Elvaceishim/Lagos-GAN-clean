@@ -4,7 +4,15 @@
     "batch_size": 2,
     "lambda_perceptual": 0.1
   },
+  "data": {
+    "val_A_dir": "afrocover/val",
+    "val_B_dir": "lagos2duplex/duplex/val"
+  },
   "logging": {
-    "eval_fid_freq": 10
+    "eval_fid_freq": 20
+  },
+  "system": {
+    "device": "cuda",
+    "gpu_ids": []
   }
 }

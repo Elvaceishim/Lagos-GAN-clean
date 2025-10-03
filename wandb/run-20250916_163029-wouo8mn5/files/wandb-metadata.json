@@ -1,0 +1,32 @@
+{
+  "os": "macOS-13.7.8-x86_64-i386-64bit",
+  "python": "CPython 3.9.6",
+  "startedAt": "2025-09-16T15:30:29.826123Z",
+  "args": [
+    "--resume",
+    "checkpoints/lagos2duplex/latest.pt",
+    "--config",
+    "configs/lagos2duplex_tune.json"
+  ],
+  "program": "-m lagos2duplex.train",
+  "git": {
+    "remote": "https://github.com/Elvaceishim/Lagos-GAN-clean.git",
+    "commit": "78a5b3bc4c173bc5c937270aee50ee01cf845a09"
+  },
+  "email": "theelvace@gmail.com",
+  "root": "/Users/mac/Lagos-GAN",
+  "host": "elvis",
+  "executable": "/Users/mac/Lagos-GAN/.venv/bin/python3",
+  "cpu_count": 2,
+  "cpu_count_logical": 4,
+  "disk": {
+    "/": {
+      "total": "250551357440",
+      "used": "219426418688"
+    }
+  },
+  "memory": {
+    "total": "17179869184"
+  },
+  "writerId": "vji11d0xooddultvelz3sk69yjcdtjdp"
+}

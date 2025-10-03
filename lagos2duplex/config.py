@@ -65,6 +65,8 @@ class DataConfig:
     """Data loading configuration"""
     # Dataset paths (relative to project root)
     data_path: str = "data_processed"  # Path to processed dataset
+    val_A_dir: Optional[str] = None     # Optional path to validation Lagos images (relative to data_path)
+    val_B_dir: Optional[str] = None     # Optional path to validation duplex images (relative to data_path)
     image_size: int = 256              # Image resolution
     
     # Data loading
@@ -174,6 +176,14 @@ class CycleGANConfig:
         
         # Set derived paths
         self.data.data_path = os.path.join(self.paths.project_root, self.data.data_path)
+
+        # Resolve validation directories if provided
+        if self.data.val_A_dir:
+            if not os.path.isabs(self.data.val_A_dir):
+                self.data.val_A_dir = os.path.join(self.data.data_path, self.data.val_A_dir)
+        if self.data.val_B_dir:
+            if not os.path.isabs(self.data.val_B_dir):
+                self.data.val_B_dir = os.path.join(self.data.data_path, self.data.val_B_dir)
     
     def update_from_dict(self, config_dict: Dict[str, Any]):
         """Update configuration from dictionary"""
@@ -238,6 +248,14 @@ class CycleGANConfig:
         # Check required paths exist
         if not os.path.exists(self.data.data_path):
             raise ValueError(f"Data path does not exist: {self.data.data_path}")
+        
+        if self.logging.eval_fid_freq and self.logging.eval_fid_freq > 0:
+            if not self.data.val_A_dir or not os.path.exists(self.data.val_A_dir):
+                raise ValueError("Validation A directory required for FID but not found: "
+                                 f"{self.data.val_A_dir}")
+            if not self.data.val_B_dir or not os.path.exists(self.data.val_B_dir):
+                raise ValueError("Validation B directory required for FID but not found: "
+                                 f"{self.data.val_B_dir}")
         
         # Check device availability
         if self.system.device == "cuda" and not torch.cuda.is_available():

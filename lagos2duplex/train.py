@@ -38,6 +38,13 @@ try:
 except ImportError:
     TENSORBOARD_AVAILABLE = False
 
+def log_checkpoint_to_wandb(*paths):
+    if not (WANDB_AVAILABLE and wandb.run is not None):
+        return
+    artifact = wandb.Artifact("lagos2duplex-checkpoint", type="model")
+    for path in paths:
+        artifact.add_file(path)
+    wandb.run.log_artifact(artifact, aliases=["latest"])
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train Lagos2Duplex CycleGAN')
@@ -379,7 +386,7 @@ def train_epoch(models, optimizers, schedulers, criterion, fake_pools, dataloade
             }
             
             if 'wandb' in loggers:
-                loggers['wandb'].log(log_dict, step=global_step)
+                loggers['wandb'].log(log_dict)
             
             if 'tensorboard' in loggers:
                 for key, value in log_dict.items():
@@ -678,6 +685,8 @@ def save_checkpoint(models, optimizers, schedulers, epoch, config,
     
     return checkpoint_path
 
+log_checkpoint_to_wandb(checkpoint_path, config_path)
+
 
 def load_checkpoint(checkpoint_path, models, optimizers, schedulers, device):
     """Load model checkpoint"""
@@ -688,21 +697,33 @@ def load_checkpoint(checkpoint_path, models, optimizers, schedulers, device):
     G_AB, G_BA, D_A, D_B = models
     optimizer_G, optimizer_D_A, optimizer_D_B = optimizers
     
-    # Load model states
-    G_AB.load_state_dict(checkpoint['G_AB_state_dict'])
-    G_BA.load_state_dict(checkpoint['G_BA_state_dict'])
-    D_A.load_state_dict(checkpoint['D_A_state_dict'])
-    D_B.load_state_dict(checkpoint['D_B_state_dict'])
+    def _unwrap(module):
+        return module.module if isinstance(module, torch.nn.DataParallel) else module
+
+    # Load model states (handle DataParallel/non-DataParallel transparently)
+    G_AB_module = _unwrap(G_AB)
+    G_BA_module = _unwrap(G_BA)
+    D_A_module = _unwrap(D_A)
+    D_B_module = _unwrap(D_B)
+
+    G_AB_module.load_state_dict(checkpoint['G_AB_state_dict'])
+    G_BA_module.load_state_dict(checkpoint['G_BA_state_dict'])
+    D_A_module.load_state_dict(checkpoint['D_A_state_dict'])
+    D_B_module.load_state_dict(checkpoint['D_B_state_dict'])
     
     # Load optimizer states
-    optimizer_G.load_state_dict(checkpoint['optimizer_G_state_dict'])
-    optimizer_D_A.load_state_dict(checkpoint['optimizer_D_A_state_dict'])
-    optimizer_D_B.load_state_dict(checkpoint['optimizer_D_B_state_dict'])
+    optimizer_G_module = _unwrap(optimizer_G)
+    optimizer_D_A_module = _unwrap(optimizer_D_A)
+    optimizer_D_B_module = _unwrap(optimizer_D_B)
+
+    optimizer_G_module.load_state_dict(checkpoint['optimizer_G_state_dict'])
+    optimizer_D_A_module.load_state_dict(checkpoint['optimizer_D_A_state_dict'])
+    optimizer_D_B_module.load_state_dict(checkpoint['optimizer_D_B_state_dict'])
     
     # Load scheduler states if available
     if schedulers and 'scheduler_states' in checkpoint:
         for scheduler, state in zip(schedulers, checkpoint['scheduler_states']):
-            scheduler.load_state_dict(state)
+            _unwrap(scheduler).load_state_dict(state)
     
     start_epoch = checkpoint['epoch']
     print(f"Resumed from epoch {start_epoch}")
@@ -860,14 +881,25 @@ def main():
         
         # Evaluate FID if configured
         if config.logging.eval_fid_freq > 0 and (epoch + 1) % config.logging.eval_fid_freq == 0:
-            fid_value = compute_fid_cyclegan(G_AB, config.data.val_B_dir, val_loader, device)
-            if fid_value is not None:
-                print(f"  FID: {fid_value:.4f}")
-                # Log FID to wandb and tensorboard
-                if 'wandb' in loggers:
-                    loggers['wandb'].log({'eval/fid': fid_value, 'epoch': epoch})
-                if 'tensorboard' in loggers:
-                    loggers['tensorboard'].add_scalar('eval/fid', fid_value, epoch)
+            real_B_dir = getattr(config.data, 'val_B_dir', None)
+
+            if not real_B_dir:
+                # Fall back to conventional dataset layout if explicit path is missing
+                inferred_dir = Path(config.data.data_path) / 'lagos2duplex' / 'duplex' / 'val'
+                if inferred_dir.exists():
+                    real_B_dir = str(inferred_dir)
+
+            if real_B_dir and os.path.isdir(real_B_dir):
+                fid_value = compute_fid_cyclegan(G_AB, real_B_dir, val_loader, device)
+                if fid_value is not None:
+                    print(f"  FID: {fid_value:.4f}")
+                    # Log FID to wandb and tensorboard
+                    if 'wandb' in loggers:
+                        loggers['wandb'].log({'eval/fid': fid_value, 'epoch': epoch})
+                    if 'tensorboard' in loggers:
+                        loggers['tensorboard'].add_scalar('eval/fid', fid_value, epoch)
+            else:
+                print("  Skipping FID evaluation: validation duplex directory not configured or missing.")
     
     # Save final checkpoint
     save_checkpoint(models, optimizers, schedulers, config.training.num_epochs - 1, config, 

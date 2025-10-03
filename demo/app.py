@@ -70,19 +70,14 @@ class LagosGANDemo:
         print(f"Using device: {self.device}")
         
         # Model paths
-        self.afrocover_model_path = self._resolve_checkpoint(
-            [
-                "models/afrocover/final_model.pt",
-                "models/afrocover/latest.pt",
-                "checkpoints/afrocover/final_model.pt",
-                "checkpoints/afrocover/latest.pt",
-                "checkpoints/afrocover/latest_checkpoint.pt",
-            ]
+        self.afrocover_model_path = (
+            "models/afrocover/latest.pt"
+        )
+        self.lagos2duplex_model_path = (
+            "models/lagos2duplex/latest.pt"
         )
         self.lagos2duplex_model_path = self._resolve_checkpoint(
             [
-                "models/lagos2duplex/final_model.pt",
-                "models/lagos2duplex/latest.pt",
                 "checkpoints/lagos2duplex/final_model.pt",
                 "checkpoints/lagos2duplex/latest.pt",
             ]
@@ -103,13 +98,9 @@ class LagosGANDemo:
         print("LagosGAN Demo initialized!")
     
     def _resolve_checkpoint(self, candidates):
-        base_dir = Path(__file__).resolve().parent.parent
-        for rel in candidates:
-            if not rel:
-                continue
-            abs_path = base_dir / rel
-            if abs_path.exists():
-                return str(abs_path)
+        for p in candidates:
+            if p and os.path.exists(p):
+                return p
         return None
 
     def _load_afrocover_model(self):
@@ -123,75 +114,25 @@ class LagosGANDemo:
 
         try:
             print(f"Loading AfroCover model from {self.afrocover_model_path}...")
-            if "models/" in self.afrocover_model_path:
-                try:
-                    scripted = torch.jit.load(
-                        self.afrocover_model_path,
-                        map_location=self.device,
-                    )
-                    scripted.eval()
-                    return scripted
-                except Exception as jit_err:
-                    print(f"TorchScript load failed ({jit_err}); falling back to state dict")
+            checkpoint = torch.load(self.afrocover_model_path, map_location=self.device)
+            cfg = checkpoint.get("args", {})
+            self.afrocover_z_dim = cfg.get("z_dim", 512)
+            self.afrocover_image_size = cfg.get("image_size", 256)
+            self.afrocover_channel_multiplier = cfg.get("channel_multiplier", 1.0)
 
-            checkpoint = torch.load(
-                self.afrocover_model_path,
-                map_location=self.device,
-                weights_only=False,
-            )
-            generator = None
-            for cfg_key in ("args", "config", "G_cfg", "model_cfg"):
-                cfg = checkpoint.get(cfg_key, {}) or {}
-                if cfg:
-                    self.afrocover_z_dim = cfg.get("z_dim", 512)
-                    self.afrocover_image_size = cfg.get("image_size", 256)
-                    self.afrocover_channel_multiplier = cfg.get("channel_multiplier", 1.0)
-                    generator = StyleGAN2Generator(
-                        z_dim=self.afrocover_z_dim,
-                        w_dim=self.afrocover_z_dim,
-                        img_resolution=self.afrocover_image_size,
-                        img_channels=3,
-                        channel_multiplier=self.afrocover_channel_multiplier,
-                    ).to(self.device)
-                    break
+            generator = StyleGAN2Generator(
+                z_dim=self.afrocover_z_dim,
+                w_dim=self.afrocover_z_dim,
+                img_resolution=self.afrocover_image_size,
+                img_channels=3,
+                channel_multiplier=self.afrocover_channel_multiplier,
+            ).to(self.device)
 
-            if generator is None:
-                generator = StyleGAN2Generator(
-                    z_dim=self.afrocover_z_dim,
-                    w_dim=self.afrocover_z_dim,
-                    img_resolution=self.afrocover_image_size,
-                    img_channels=3,
-                    channel_multiplier=self.afrocover_channel_multiplier,
-                ).to(self.device)
-            print(
-                "AfroCover generator config:",
-                {
-                    "z_dim": self.afrocover_z_dim,
-                    "image_size": self.afrocover_image_size,
-                    "channel_multiplier": self.afrocover_channel_multiplier,
-                },
-            )
-
-            state = (
-                checkpoint.get("generator_state_dict")
-                or checkpoint.get("generator")
-                or checkpoint.get("g_ema")
-                or checkpoint.get("ema")
-            )
+            state = checkpoint.get("generator_state_dict") or checkpoint.get("generator")
             if state is None:
                 raise ValueError("Generator weights not found in checkpoint")
 
-            load_result = generator.load_state_dict(state, strict=False)
-            if getattr(load_result, "missing_keys", None):
-                print(
-                    "AfroCover load missing keys:",
-                    sorted(load_result.missing_keys),
-                )
-            if getattr(load_result, "unexpected_keys", None):
-                print(
-                    "AfroCover load unexpected keys:",
-                    sorted(load_result.unexpected_keys),
-                )
+            generator.load_state_dict(state, strict=False)
             generator.eval()
             return generator
         except Exception as e:
@@ -209,22 +150,7 @@ class LagosGANDemo:
 
         try:
             print(f"Loading Lagos2Duplex model from {self.lagos2duplex_model_path}...")
-            if "models/" in self.lagos2duplex_model_path:
-                try:
-                    scripted = torch.jit.load(
-                        self.lagos2duplex_model_path,
-                        map_location=self.device,
-                    )
-                    scripted.eval()
-                    return scripted
-                except Exception as jit_err:
-                    print(f"TorchScript load failed ({jit_err}); falling back to state dict")
-
-            checkpoint = torch.load(
-                self.lagos2duplex_model_path,
-                map_location=self.device,
-                weights_only=False,
-            )
+            checkpoint = torch.load(self.lagos2duplex_model_path, map_location=self.device)
             cfg = checkpoint.get("config", {})
             model_cfg = cfg.get("model", {})
 
@@ -249,38 +175,11 @@ class LagosGANDemo:
                 n_blocks=n_blocks,
             ).to(self.device)
 
-            print(
-                "Lagos2Duplex generator config:",
-                {
-                    "input_nc": self.lagos_input_nc,
-                    "output_nc": self.lagos_output_nc,
-                    "ngf": ngf,
-                    "norm": norm,
-                    "use_dropout": use_dropout,
-                    "n_blocks": n_blocks,
-                    "image_size": self.lagos_image_size,
-                },
-            )
-
-            state = (
-                checkpoint.get("G_AB_state_dict")
-                or checkpoint.get("generator_state_dict")
-                or checkpoint.get("generator")
-            )
+            state = checkpoint.get("G_AB_state_dict")
             if state is None:
                 raise ValueError("G_AB_state_dict not found in checkpoint")
 
-            load_result = generator.load_state_dict(state, strict=False)
-            if getattr(load_result, "missing_keys", None):
-                print(
-                    "Lagos2Duplex load missing keys:",
-                    sorted(load_result.missing_keys),
-                )
-            if getattr(load_result, "unexpected_keys", None):
-                print(
-                    "Lagos2Duplex load unexpected keys:",
-                    sorted(load_result.unexpected_keys),
-                )
+            generator.load_state_dict(state, strict=False)
             generator.eval()
             return generator
         except Exception as e:
@@ -323,8 +222,7 @@ class LagosGANDemo:
             print("Transforming house to duplex...")
             img = Image.fromarray(input_image).convert("RGB")
             img = img.resize((self.lagos_image_size, self.lagos_image_size), Image.BICUBIC)
-            img_np = np.array(img, copy=True)
-            img_tensor = torch.from_numpy(img_np).float() / 255.0
+            img_tensor = torch.from_numpy(np.asarray(img)).float() / 255.0
             img_tensor = (img_tensor - 0.5) / 0.5  # [-1,1]
             img_tensor = img_tensor.permute(2, 0, 1).unsqueeze(0).to(self.device)
 
@@ -466,7 +364,7 @@ def create_demo():
     ) as demo:
         
         gr.Markdown("""
-        # 🇳🇬 LagosGAN: AI-Powered African Creativity
+        # LagosGAN: AI-Powered African Creativity
         
         Explore two innovative GAN applications celebrating African design and architecture.
         """)
@@ -520,12 +418,12 @@ def main():
     
     # Launch with appropriate settings
     demo.launch(
-        server_name="0.0.0.0",
-        server_port=7860,
-        share=False,
-        debug=False,
-        show_error=True,
-    )
+    server_name="127.0.0.1",
+    server_port=7860,
+    share=False,
+    debug=True,
+    show_error=True,
+)
 
 
 

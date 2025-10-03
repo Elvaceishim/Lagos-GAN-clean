@@ -15,7 +15,7 @@ COPY . .
 
 ENV GAN_TS_MODEL=/app/checkpoints/production/G_AB_epoch02_ts.pt
 ENV GAN_IMG_SIZE=64
-# do NOT hardcode keys here
+
 ENV GAN_API_KEYS=""
 
 EXPOSE 8080

@@ -1,0 +1,6 @@
+Generate+Eval run at: 2025-09-12T00:39:38.670702
+Num processed: 50
+Diversity_mean_pairwise_l2: 29.366243362426758
+Realism_mean_nn_l2: 27.08206558227539
+Mean_LPIPS_to_nn: 0.3923560833930969
+Mean_KID: 6.590753220663267

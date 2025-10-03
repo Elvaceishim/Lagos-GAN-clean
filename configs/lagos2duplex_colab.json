@@ -1,0 +1,32 @@
+{
+  "training": {
+    "num_epochs": 9,
+    "batch_size": 1,
+    "learning_rate": 0.0002,
+    "output_dir": "/content/drive/MyDrive/lagosgan/checkpoints/lagos2duplex",
+    "save_freq": 1,
+    "sample_freq": 1
+  },
+  "data": {
+    "data_path": "/content/drive/MyDrive/lagosgan/data/lagos2duplex",
+    "lagos_dir": "/content/drive/MyDrive/lagosgan/data/lagos2duplex/lagos",
+    "duplex_dir": "/content/drive/MyDrive/lagosgan/data/lagos2duplex/duplex",
+    "image_size": 256,
+    "num_workers": 2,
+    "prefetch_factor": 2,
+    "paired": false
+  },
+  "system": {
+    "device": "cuda",
+    "gpu_ids": [
+      0
+    ],
+    "deterministic": false
+  },
+  "paths": {
+    "project_root": "/content/Lagos-GAN-clean",
+    "checkpoints_dir": "/content/drive/MyDrive/lagosgan/checkpoints/lagos2duplex",
+    "results_dir": "/content/drive/MyDrive/lagosgan/results/lagos2duplex",
+    "logs_dir": "/content/drive/MyDrive/lagosgan/logs/lagos2duplex"
+  }
+}
