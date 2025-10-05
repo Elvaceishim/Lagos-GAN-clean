@@ -16,6 +16,11 @@ from PIL import Image
 from gradio_client import utils as gradio_client_utils
 
 try:
+    from huggingface_hub import hf_hub_download
+except ImportError:  # pragma: no cover - optional dependency for HF Spaces
+    hf_hub_download = None
+
+try:
     from afrocover.models import StyleGAN2Generator
 except ModuleNotFoundError:  # pragma: no cover - deployed Spaces copy omits training code
     StyleGAN2Generator = None
@@ -68,19 +73,39 @@ class LagosGANDemo:
     def __init__(self):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         print(f"Using device: {self.device}")
-        
+
         # Model paths
-        self.afrocover_model_path = (
-            "models/afrocover/latest.pt"
+        self._base_dir = Path(__file__).resolve().parent.parent
+        self.afrocover_model_path = self._resolve_checkpoint(
+            [
+                "models/afrocover/final_model.pt",
+                "models/afrocover/latest.pt",
+                "checkpoints/afrocover/final_model.pt",
+                "checkpoints/afrocover/latest.pt",
+                "checkpoints/afrocover/latest_checkpoint.pt",
+            ]
         )
-        self.lagos2duplex_model_path = (
-            "models/lagos2duplex/latest.pt"
+        self.lagos2duplex_repo_id = os.environ.get(
+            "LAGOS2DUPLEX_REPO_ID", "theelvace/lagos2duplex"
+        )
+        self.lagos2duplex_revision = os.environ.get(
+            "LAGOS2DUPLEX_REVISION", "main"
+        )
+        self.lagos2duplex_filename = os.environ.get(
+            "LAGOS2DUPLEX_FILENAME", "latest.pt"
         )
         self.lagos2duplex_model_path = self._resolve_checkpoint(
             [
+                "models/lagos2duplex/final_model.pt",
+                "models/lagos2duplex/latest.pt",
                 "checkpoints/lagos2duplex/final_model.pt",
                 "checkpoints/lagos2duplex/latest.pt",
-            ]
+            ],
+            hub_fallback=(
+                self.lagos2duplex_repo_id,
+                self.lagos2duplex_filename,
+                self.lagos2duplex_revision,
+            ),
         )
 
         self.afrocover_z_dim = 512
@@ -97,10 +122,29 @@ class LagosGANDemo:
         
         print("LagosGAN Demo initialized!")
     
-    def _resolve_checkpoint(self, candidates):
-        for p in candidates:
-            if p and os.path.exists(p):
-                return p
+    def _resolve_checkpoint(self, candidates, hub_fallback=None):
+        for rel in candidates:
+            if not rel:
+                continue
+            abs_path = self._base_dir / rel
+            if abs_path.exists():
+                return str(abs_path)
+        if hub_fallback and hf_hub_download is not None:
+            repo_id, filename, revision = hub_fallback
+            try:
+                print(
+                    f"Downloading {filename} from Hugging Face repo {repo_id}"
+                    f" (revision: {revision})"
+                )
+                return hf_hub_download(
+                    repo_id=repo_id,
+                    filename=filename,
+                    revision=revision,
+                )
+            except Exception as exc:  # pragma: no cover - network required
+                print(
+                    f"Failed to download {filename} from {repo_id}: {exc}"
+                )
         return None
 
     def _load_afrocover_model(self):

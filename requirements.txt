@@ -16,6 +16,7 @@ gradio>=3.0.0
 streamlit>=1.0.0
 fastapi>=0.95
 uvicorn[standard]>=0.21
+huggingface-hub>=0.23.0
 
 # Scientific computing
 scipy>=1.7.0
