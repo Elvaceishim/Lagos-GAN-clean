@@ -76,6 +76,15 @@ class LagosGANDemo:
 
         # Model paths
         self._base_dir = Path(__file__).resolve().parent.parent
+        self.afrocover_repo_id = os.environ.get(
+            "AFROCOVER_REPO_ID", "theelvace/afrocover"
+        )
+        self.afrocover_revision = os.environ.get(
+            "AFROCOVER_REVISION", "main"
+        )
+        self.afrocover_filename = os.environ.get(
+            "AFROCOVER_FILENAME", "latest.pt"
+        )
         self.afrocover_model_path = self._resolve_checkpoint(
             [
                 "models/afrocover/final_model.pt",
@@ -83,7 +92,12 @@ class LagosGANDemo:
                 "checkpoints/afrocover/final_model.pt",
                 "checkpoints/afrocover/latest.pt",
                 "checkpoints/afrocover/latest_checkpoint.pt",
-            ]
+            ],
+            hub_fallback=(
+                self.afrocover_repo_id,
+                self.afrocover_filename,
+                self.afrocover_revision,
+            ),
         )
         self.lagos2duplex_repo_id = os.environ.get(
             "LAGOS2DUPLEX_REPO_ID", "theelvace/lagos2duplex"
