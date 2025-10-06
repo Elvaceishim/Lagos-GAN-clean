@@ -457,6 +457,11 @@ def main():
     """Main function to launch the demo"""
     print("Starting LagosGAN Demo...")
 
+    # Route Hugging Face cache to ephemeral storage so repeated downloads
+    # do not accumulate in the Space's persistent volume (prevents eviction).
+    os.environ.setdefault("HF_HOME", "/tmp/hf-cache")
+    os.environ.setdefault("HF_HUB_CACHE", "/tmp/hf-cache")
+
     # Create and launch demo
     demo = create_demo()
 
