@@ -456,14 +456,18 @@ def create_demo():
 def main():
     """Main function to launch the demo"""
     print("Starting LagosGAN Demo...")
-    
+
     # Create and launch demo
     demo = create_demo()
-    
+
     # Launch with appropriate settings
+    # Hugging Face Spaces sometimes inject GRADIO_SERVER_NAME=127.0.0.1.
+    # Force-bind to 0.0.0.0 so the public proxy can reach the app.
+    os.environ["GRADIO_SERVER_NAME"] = "0.0.0.0"
+    os.environ.setdefault("PORT", os.environ.get("GRADIO_SERVER_PORT", "7860"))
     demo.launch(
         server_name="0.0.0.0",
-        server_port=int(os.environ.get("PORT", os.environ.get("GRADIO_SERVER_PORT", "7860"))),
+        server_port=int(os.environ.get("PORT", "7860")),
         share=False,
         debug=False,
         show_error=True,
