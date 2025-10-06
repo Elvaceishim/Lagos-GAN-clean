@@ -1,0 +1,13 @@
+.venv
+env
+__pycache__
+*.pyc
+checkpoints
+data
+data_processed
+results
+.git
+.vscode
+.DS_Store
+node_modules
+dist
