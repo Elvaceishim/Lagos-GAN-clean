@@ -465,7 +465,7 @@ def main():
         server_name="0.0.0.0",
         server_port=int(os.environ.get("PORT", os.environ.get("GRADIO_SERVER_PORT", "7860"))),
         share=False,
-        debug=True,
+        debug=False,
         show_error=True,
     )
 
