@@ -11,6 +11,7 @@ from typing import Any
 import gradio as gr
 import numpy as np
 import torch
+import torch.serialization as torch_serial
 from PIL import Image
 
 from gradio_client import utils as gradio_client_utils
@@ -42,6 +43,7 @@ except ModuleNotFoundError:  # pragma: no cover - deployed Spaces copy omits tra
 # string representations so the demo can launch until the upstream bug is
 # resolved.
 _ORIGINAL_JSON_SCHEMA_TO_PYTHON_TYPE = gradio_client_utils._json_schema_to_python_type
+torch_serial.add_safe_globals([np.core.multiarray.scalar])
 
 
 def _json_schema_to_python_type_safe(schema: Any, defs) -> str:
@@ -174,7 +176,11 @@ class LagosGANDemo:
 
         try:
             print(f"Loading AfroCover model from {self.afrocover_model_path}...")
-            checkpoint = torch.load(self.afrocover_model_path, map_location=self.device)
+            checkpoint = torch.load(
+                self.afrocover_model_path,
+                map_location=self.device,
+                weights_only=False,
+            )
             cfg = checkpoint.get("args", {})
             self.afrocover_z_dim = cfg.get("z_dim", 512)
             self.afrocover_image_size = cfg.get("image_size", 256)
