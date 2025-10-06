@@ -462,12 +462,12 @@ def main():
     
     # Launch with appropriate settings
     demo.launch(
-    server_name="127.0.0.1",
-    server_port=7860,
-    share=False,
-    debug=True,
-    show_error=True,
-)
+        server_name=os.environ.get("GRADIO_SERVER_NAME", "0.0.0.0"),
+        server_port=int(os.environ.get("GRADIO_SERVER_PORT", "7860")),
+        share=False,
+        debug=True,
+        show_error=True,
+    )
 
 
 
