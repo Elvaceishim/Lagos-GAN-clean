@@ -85,14 +85,16 @@ class LagosGANDemo:
         self.afrocover_filename = os.environ.get(
             "AFROCOVER_FILENAME", "latest.pt"
         )
+        use_local_afrocover = os.environ.get("AFROCOVER_USE_LOCAL", "false").lower() in {"1", "true", "yes"}
+        afrocover_candidates = [
+            "models/afrocover/final_model.pt",
+            "models/afrocover/latest.pt",
+            "checkpoints/afrocover/final_model.pt",
+            "checkpoints/afrocover/latest.pt",
+            "checkpoints/afrocover/latest_checkpoint.pt",
+        ] if use_local_afrocover else []
         self.afrocover_model_path = self._resolve_checkpoint(
-            [
-                "models/afrocover/final_model.pt",
-                "models/afrocover/latest.pt",
-                "checkpoints/afrocover/final_model.pt",
-                "checkpoints/afrocover/latest.pt",
-                "checkpoints/afrocover/latest_checkpoint.pt",
-            ],
+            afrocover_candidates,
             hub_fallback=(
                 self.afrocover_repo_id,
                 self.afrocover_filename,
