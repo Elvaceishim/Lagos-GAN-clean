@@ -365,16 +365,3 @@ For questions about these datasets or to contribute additional data, please cont
 - Should enhance geographic or stylistic diversity
 - Must undergo quality and cultural sensitivity review
 
-## Citation
-
-If you use these datasets in your research, please cite:
-
-```bibtex
-@dataset{lagosgan_datasets2024,
-  title={LagosGAN Datasets: AfroCover and Lagos2Duplex Collections},
-  author={[Author Names]},
-  year={2024},
-  publisher={[Publisher]},
-  version={1.0}
-}
-```
