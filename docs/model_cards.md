@@ -243,15 +243,4 @@ For questions about this model, please contact the LagosGAN team.
 - 256×256 resolution training
 - Initial model cards and documentation
 
-## Citation
 
-If you use these models in your research, please cite:
-
-```bibtex
-@article{lagosgan2024,
-  title={LagosGAN: AI-Powered African Creativity Through Generative Models},
-  author={[Author Names]},
-  journal={[Journal Name]},
-  year={2024}
-}
-```
