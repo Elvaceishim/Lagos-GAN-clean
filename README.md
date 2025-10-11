@@ -1,16 +1,10 @@
 ---
 title: Lagos Gan Demo
-emoji: 📚
-colorFrom: purple
-colorTo: purple
 sdk: gradio
 sdk_version: 5.46.0
 app_file: app.py
-pinned: false
 short_description: Experimental ML project showcasing how GANs work
 ---
-
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
 
 # LagosGAN
 
@@ -22,8 +16,8 @@ LagosGAN is an experimental ML project showcasing how GANs can power African-cen
 ## Objectives
 
 - Build two GAN pipelines (StyleGAN2-ADA and CycleGAN/CUT)
-- Provide a live demo (Gradio/Streamlit) for public use
-- Deliver working demo, code repo, and thought-leadership article within one week
+- Provide a live demo (Gradio) for public use
+- Deliver working demo and article narrating my experience and what I've learnt
 
 ## Project Structure
 
