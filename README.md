@@ -17,7 +17,7 @@ LagosGAN is an experimental ML project showcasing how GANs can power African-cen
 
 - Build two GAN pipelines (StyleGAN2-ADA and CycleGAN/CUT)
 - Provide a live demo (Gradio) for public use
-- Deliver working demo and article narrating my experience and what I've learnt
+- Deliver a working demo and an article narrating my experience and what I've learnt
 
 ## Project Structure
 
@@ -34,41 +34,8 @@ lagosgan/
 └── requirements.txt   # dependencies
 ```
 
-## Quick Start
-
-1. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-2. **Prepare datasets:**
-   ```bash
-   python scripts/prepare_afrocover_data.py
-   python scripts/prepare_lagos_data.py
-   ```
-
-3. **Train models:**
-   ```bash
-   # AfroCover (StyleGAN2)
-   python afrocover/train.py
-
-   # Lagos2Duplex (CycleGAN)
-   python lagos2duplex/train.py
-   ```
-
-4. **Run demo:**
-   ```bash
-   PYTHONPATH=$(pwd) python demo/app.py
-   ```
-   The app exposes both GAN experiences through a Gradio UI. Keep `share=True` inside `demo/app.py` if you need the temporary public link.
-
-### Note on Gradio 5.x
-
-Gradio 5 introduced a regression in its API schema helper that crashes when boolean `additionalProperties` entries appear in a component schema. Until the upstream fix ships, the demo applies a small monkey patch near the top of `demo/app.py` that coerces those boolean nodes into safe defaults. If you change Gradio versions or run in a Hugging Face Space, leave that shim in place (or remove it once a patched release lands).
-
 ## Success Metrics
 
-- At least 12 high-quality samples per task
 - FID < 60 for AfroCover at 256²
 - User study: ≥70% participants prefer generated duplex vs baseline
 - Article: 2k+ words with charts, metrics, and visuals
@@ -100,7 +67,7 @@ Training on CPU still yields an AfroCover FID of ~464 (200 generated samples). A
 
 ## Links
 
-- [Live Demo](#)(https://huggingface.co/spaces/theelvace/lagos-gan-demo)
+- [Live Demo](#) (https://huggingface.co/spaces/theelvace/lagos-gan-demo)
 - [Article](#) (Coming soon)
 - [Model Cards](docs/model_cards.md)
 - [Dataset Cards](docs/dataset_cards.md)
