@@ -68,7 +68,7 @@ Training on CPU still yields an AfroCover FID of ~464 (200 generated samples). A
 ## Links
 
 - [Live Demo](#) (https://huggingface.co/spaces/theelvace/lagos-gan-demo)
-- [Article](#) (Coming soon)
+- [Article](https://medium.com/@theelvace/my-introduction-to-generative-adversarial-networks-gans-90f63ebe88f0) (Coming soon)
 - [Model Cards](docs/model_cards.md)
 - [Dataset Cards](docs/dataset_cards.md)
 
